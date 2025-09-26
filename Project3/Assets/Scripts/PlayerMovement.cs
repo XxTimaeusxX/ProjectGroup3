@@ -7,9 +7,17 @@ public class PlayerMovement : MonoBehaviour
 {
     public CharacterController controller;
     public Transform thirdPersonCamera;
+    public Transform groundCheck;
     PlayerInput playerInput;
     InputAction moveAction;
+    InputAction jumpAction;
+    Vector3 velocity;
+    bool isGrounded;
+    public LayerMask groundMask;
     public float moveSpeed;
+    public float gravity;
+    public float groundDistance;
+    public float jumpHeight;
     public float turnSmoothTime;
     float turnSmoothVelocity;
 
@@ -18,11 +26,22 @@ public class PlayerMovement : MonoBehaviour
     {
         playerInput = GetComponent<PlayerInput>();
         moveAction = playerInput.actions.FindAction("Move");
+        jumpAction = playerInput.actions.FindAction("Jump");
     }
 
     private void Update()
     {
+        velocity.y += gravity * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+
+        if (isGrounded && velocity.y < 0)
+        {
+            velocity.y = -2f;
+        }
+
         MovePlayer();
+        Jump();
     }
 
     void MovePlayer()
@@ -38,5 +57,14 @@ public class PlayerMovement : MonoBehaviour
             controller.Move(moveDirection.normalized * moveSpeed * Time.deltaTime);
         }
         
+    }
+
+    void Jump()
+    {
+        if (jumpAction.WasPressedThisFrame() && isGrounded)
+        {
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            isGrounded = false;
+        }
     }
 }
