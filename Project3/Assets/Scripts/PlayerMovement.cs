@@ -10,8 +10,9 @@ public class PlayerMovement : MonoBehaviour
     PlayerInput playerInput;
     InputAction moveAction;
     public float moveSpeed;
-    public float smoothTurn;
-    float smoothTurnVelocity;
+    public float turnSmoothTime;
+    float turnSmoothVelocity;
+
 
     private void Start()
     {
@@ -31,11 +32,10 @@ public class PlayerMovement : MonoBehaviour
         if (direction.magnitude >= 0.1f)
         {
             float targetAngle = Mathf.Atan2(direction.x, direction.y) * Mathf.Rad2Deg + thirdPersonCamera.eulerAngles.y;
-            float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref smoothTurnVelocity, smoothTurn);
+            float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
             Vector3 moveDirection = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
-            transform.position += new Vector3(moveDirection.x, 0, moveDirection.y) * moveSpeed * Time.deltaTime;
+            controller.Move(moveDirection.normalized * moveSpeed * Time.deltaTime);
         }
         
     }
